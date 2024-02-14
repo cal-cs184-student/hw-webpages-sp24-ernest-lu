@@ -1,7 +1,350 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Homework 1 index.html here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+	<style>
+		body {
+			padding: 200px;
+			width: 1000px;
+			margin: auto;
+			text-align: left;
+			font-weight: 300;
+			font-family: 'Open Sans', sans-serif;
+			color: #121212;
+		}
+
+		h1,
+		h2,
+		h3,
+		h4 {
+			font-family: 'Source Sans Pro', sans-serif;
+		}
+
+		td {
+			border: 1px solid black;
+			padding: 4px
+		}
+	</style>
+	<title>CS 184/284A Rasterizer</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+	<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+  </script>
+	<script type="text/javascript"
+		src="http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+		</script>
+</head>
+
+
+<body>
+
+	<h1 align="middle">CS 184/284A: Computer Graphics and Imaging, Spring 2024</h1>
+	<h1 align="middle">Homework 1: Rasterizer</h1>
+	<h2 align="middle">Ernest Lu</h2>
+
+	<br><br>
+
+	<div>
+
+		<h2 align="middle">Overview</h2>
+		<p> In this homework, we implement a rasterizer that can process svg files and svg objects. Given instances of
+			objects in an svg, we implement methods to draw and color triangles on a pixel screen. To do this, we first
+			draw a
+			triangle by determining if points lie within a triangle, color these triangles with sampled colors, and
+			finally
+			display them in a frame buffer. I found the code-to-visualization pipeline interesting, as I had never
+			written
+			code where I could so visually and clearly see the results of my implementations.</p>
+
+		<h2 align="middle">Section I: Rasterization</h2>
+
+		<h3 align="middle">Part 1: Rasterizing single-color triangles</h3>
+
+		1. We rasterize triangles by first, looping through points in the frame buffer, then determining whether or not
+		the
+		$x +
+		0.5$, $y + 0.5$ point is within the triangle using the half-plane algorithms, and finally, coloring the pixel if
+		the
+		point is in the triangle.
+
+		<div align="middle">
+			<table style="width=100%">
+				<tr>
+					<td>
+						<img src="images/basic-test-4.png">
+						<figcaption align="middle">Image of test 4</figcaption>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h4>
+			EC Optimizations:
+		</h4>
+		Trying optimizations of not looping through the entire frame buffer (only loop from the miniumum triangle x
+		coord to
+		maximium and vice versa for y). These optimizations were implemented after supersampling was implemented.
+		<div align="middle">
+			Time (in microseconds) to rasterize entire image. Timed with
+			<code>
+        std::chrono()
+      </code>
+			(Testing on basic/test3.svg)
+			<table style="width=100%; padding: 8px;">
+				<tr>
+					<td>
+						Supersample Rate
+					</td>
+					<td>
+						Only loop from $[min_x, max_x], [min_y, max_y]$
+					</td>
+					<td>
+						No optimizations
+					</td>
+				</tr>
+				<tr>
+					<td>
+						1 per pixel
+					</td>
+					<td>
+						19383 microseconds
+					</td>
+					<td>
+						121047 microseconds
+					</td>
+				</tr>
+				<tr>
+					<td>
+						4 per pixel
+					</td>
+					<td>
+						59684 microseconds
+					</td>
+					<td>
+						212412 microseconds
+					</td>
+				</tr>
+				<tr>
+					<td>
+						9 per pixel
+					</td>
+					<td>
+						140143 microseconds
+					</td>
+					<td>
+						413413 microseconds
+					</td>
+				</tr>
+				<tr>
+					<td>
+						16 per pixel
+					</td>
+					<td>
+						223361 microseconds
+					</td>
+					<td>
+						1623411 microseconds
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h3 align="middle">Part 2: Antialiasing triangles</h3>
+		To supersample, we first resize our sample_buffer to be effectively a frame buffer for a higher resolution
+		image,
+		then we populate this higher resolution image as normal and finally call a restore to frame buffer to average
+		out
+		each of the relevant samples in each pixel. This changed the resolving to framebuffer and filling framebuffer
+		sections of the pipeline.
+
+		<div align="middle">
+			<table style="width=100%">
+				<tr>
+					<td>
+						<img src="images/basic-4-1.png">
+						<figcaption align="middle">Basic test 4 supersample 1</figcaption>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<img src="images/basic-4-4.png">
+						<figcaption align="middle">Basic test 4 supersample 4</figcaption>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<img src="images/basic-4-16.png">
+						<figcaption align="middle">Basic test 4 supersample 16</figcaption>
+					</td>
+				</tr>
+
+			</table>
+		</div>
+
+		<h4> Extra Credit: Alternative Antialiasing sample </h4>
+		I implemented random sampling instead of super sampling within the pixel, uses the same sampling rate and
+		<code>std::random</code>
+		libraries.
+		<div align="middle">
+			<table style="width=100%">
+				<tr>
+					<td>
+						<img src="images/randomsamplingbasic-3.png">
+						<figcaption align="middle">Basic test 4 supersample 1. Sampling randomly within the pixel
+							doesn't draw the
+							lines of the triangles. uniformly can get the lines of the triangles.</figcaption>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<img src="images/supersampling.png">
+						<figcaption align="middle">Basic test 4 supersample 4</figcaption>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h3 align="middle">Part 3: Transforms</h3>
+
+		I tried giving the cubeman a sword and making his left side smaller (smaller left leg, smaller left arm).
+		<div align="middle">
+			<table style="width=100%">
+				<tr>
+					<td>
+						<img src="images/cubeman.png">
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h2 align="middle">Section II: Sampling</h2>
+
+		<h3 align="middle">Part 4: Barycentric coordinates</h3>
+		Barycentric coordinates of a point take the weighted average of a set of coordinates given in the input. The
+		closer
+		coordinates are to one vertex, the more likely they will look like the given vertex in the input.
+		<div align="middle">
+			<table style="width=100%">
+				<tr>
+					<td>
+						<img src="images/barycentric.png">
+						<figcaption align="middle">Illustrating yellow as the bottom coordinate (closer to yellow is
+							more yellow)
+						</figcaption>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<div align="middle">
+			<table style="width=100%">
+				<tr>
+					<td>
+						<img src="images/colorwheel.png">
+						<figcaption align="middle">Color Wheel</figcaption>
+					</td>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h3 align="middle">Part 5: "Pixel sampling" for texture mapping</h3>
+		Pixel sampling is where, for every point that we are planning to sample, if it's within the triangle that we are
+		trying to texturize, we find it's barycentric coordinates within this triangle. Using these coordinates, we then
+		compute a weighted sum of the corresponding textures that this should sample to. This will give us a color to
+		correspond to the sample point. Our final image can be recovered from these samples. Billinear sampling, as
+		opposed
+		to nearest sampling does this, but corresponds each sample with more neighbors. Meaning for a given point in our
+		sample texture, we linearly interpolate the best color using the colors from points close to it.
+
+		We look at texmap/test1.svg to see the line between Africa and the ocean on using the different pixel sampling
+		methods.
+		<div align="middle">
+			<table style="width=100%">
+				<tr>
+					<td>
+						<img src="images/nearest1.png">
+						<figcaption align="middle">nearest sampling 1 supersampling</figcaption>
+					</td>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<img src="images/nearest16.png">
+						<figcaption align="middle">nearest sampling 16 supersampling</figcaption>
+					</td>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<img src="images/bilinear1.png">
+						<figcaption align="middle">bilinear sampling 1 supersampling</figcaption>
+					</td>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<img src="images/bilinear16.png">
+						<figcaption align="middle">bilinear sampling 16 supersampling</figcaption>
+					</td>
+					</td>
+				</tr>
+			</table>
+		</div>
+		A large difference between bilinear and pixel sampling exists due to the variations in how the sampling is done.
+		In
+		bilinear sampling, we are averaging out so sharp lines are not as contrasting and will not affect our final
+		image as
+		much.
+
+		<h3 align="middle">Part 6: "Level sampling" with mipmaps for texture mapping</h3>
+		Level sampling works with reduced texture "mipmaps", which are lower resolution images of our given texture.
+		Using
+		this, we generate an image by sampling the corresponding color from the mip map for the given UV coordinates.
+		This
+		can also be interpolated linearly between different levels.
+
+		Made 4 images of a lebron texture to showcase the different sampling methods.
+		<div align="middle">
+			<table style="width=100%">
+				<tr>
+					<td>
+						<img src="images/lebronlevel0.png">
+						<figcaption align="middle">Lebron base texture level 0 and nearest</figcaption>
+					</td>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<img src="images/lebronlevel02.png">
+						<figcaption align="middle">LeBron sampled with bilinear interpolation</figcaption>
+					</td>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<img src="images/lebronnearestpixel.png">
+						<figcaption align="middle">Lebron sampled with nearest pixel and nearest level sampling
+						</figcaption>
+					</td>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<img src="images/lebrontrilinear.png">
+						<figcaption align="middle">Trilinear sampling on LeBron</figcaption>
+					</td>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h2 align="middle">Section III: Art Competition</h2>
+		<p>If you are not participating in the optional art competition, don't worry about this section!</p>
+
+		<h3 align="middle">Part 7: Draw something interesting!</h3>
+
+</body>
+
 </html>
