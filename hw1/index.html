@@ -38,7 +38,7 @@
 
 
 <body>
-
+	<a href="https://cal-cs184-student.github.io/hw-webpages-sp24-ernest-lu/hw1/index.html">website link</a>
 	<h1 align="middle">CS 184/284A: Computer Graphics and Imaging, Spring 2024</h1>
 	<h1 align="middle">Homework 1: Rasterizer</h1>
 	<h2 align="middle">Ernest Lu</h2>
@@ -48,8 +48,10 @@
 	<div>
 
 		<h2 align="middle">Overview</h2>
-		<p> In this homework, we implement a rasterizer that can process svg files and svg objects. Given instances of
-			objects in an svg, we implement methods to draw and color triangles on a pixel screen. To do this, we first
+		<p> In this homework, we implement a rasterizer that can process svg files and svg objects. Given instances
+			of
+			objects in an svg, we implement methods to draw and color triangles on a pixel screen. To do this, we
+			first
 			draw a
 			triangle by determining if points lie within a triangle, color these triangles with sampled colors, and
 			finally
@@ -61,10 +63,12 @@
 
 		<h3 align="middle">Part 1: Rasterizing single-color triangles</h3>
 
-		1. We rasterize triangles by first, looping through points in the frame buffer, then determining whether or not
+		1. We rasterize triangles by first, looping through points in the frame buffer, then determining whether or
+		not
 		the
 		$x +
-		0.5$, $y + 0.5$ point is within the triangle using the half-plane algorithms, and finally, coloring the pixel if
+		0.5$, $y + 0.5$ point is within the triangle using the half-plane algorithms, and finally, coloring the
+		pixel if
 		the
 		point is in the triangle.
 
@@ -153,9 +157,11 @@
 		<h3 align="middle">Part 2: Antialiasing triangles</h3>
 		To supersample, we first resize our sample_buffer to be effectively a frame buffer for a higher resolution
 		image,
-		then we populate this higher resolution image as normal and finally call a restore to frame buffer to average
+		then we populate this higher resolution image as normal and finally call a restore to frame buffer to
+		average
 		out
-		each of the relevant samples in each pixel. This changed the resolving to framebuffer and filling framebuffer
+		each of the relevant samples in each pixel. This changed the resolving to framebuffer and filling
+		framebuffer
 		sections of the pipeline.
 
 		<div align="middle">
@@ -250,15 +256,20 @@
 		</div>
 
 		<h3 align="middle">Part 5: "Pixel sampling" for texture mapping</h3>
-		Pixel sampling is where, for every point that we are planning to sample, if it's within the triangle that we are
-		trying to texturize, we find it's barycentric coordinates within this triangle. Using these coordinates, we then
-		compute a weighted sum of the corresponding textures that this should sample to. This will give us a color to
+		Pixel sampling is where, for every point that we are planning to sample, if it's within the triangle that we
+		are
+		trying to texturize, we find it's barycentric coordinates within this triangle. Using these coordinates, we
+		then
+		compute a weighted sum of the corresponding textures that this should sample to. This will give us a color
+		to
 		correspond to the sample point. Our final image can be recovered from these samples. Billinear sampling, as
 		opposed
-		to nearest sampling does this, but corresponds each sample with more neighbors. Meaning for a given point in our
+		to nearest sampling does this, but corresponds each sample with more neighbors. Meaning for a given point in
+		our
 		sample texture, we linearly interpolate the best color using the colors from points close to it.
 
-		We look at texmap/test1.svg to see the line between Africa and the ocean on using the different pixel sampling
+		We look at texmap/test1.svg to see the line between Africa and the ocean on using the different pixel
+		sampling
 		methods.
 		<div align="middle">
 			<table style="width=100%">
@@ -292,7 +303,8 @@
 				</tr>
 			</table>
 		</div>
-		A large difference between bilinear and pixel sampling exists due to the variations in how the sampling is done.
+		A large difference between bilinear and pixel sampling exists due to the variations in how the sampling is
+		done.
 		In
 		bilinear sampling, we are averaging out so sharp lines are not as contrasting and will not affect our final
 		image as
@@ -301,7 +313,8 @@
 		<h3 align="middle">Part 6: "Level sampling" with mipmaps for texture mapping</h3>
 		Level sampling works with reduced texture "mipmaps", which are lower resolution images of our given texture.
 		Using
-		this, we generate an image by sampling the corresponding color from the mip map for the given UV coordinates.
+		this, we generate an image by sampling the corresponding color from the mip map for the given UV
+		coordinates.
 		This
 		can also be interpolated linearly between different levels.
 
